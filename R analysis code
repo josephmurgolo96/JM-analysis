@@ -1,0 +1,50 @@
+Data <- read.csv(file.choose(),na.strings = c(""))
+str(Data2)
+View(Data)
+Data <- Data[,c(1:8)]
+
+Data[!complete.cases(Data$Rating),]
+Data[is.na(Data),]
+DataBackup <- Data
+Data <- Data[!is.na(Data$Category),]
+Data <- Data[!is.na(Data$Rating),]
+Data <- Data[!is.na(Data$Size),]
+
+rownames(Data) <- 1:nrows(Data)
+
+Data$Reviews <- as.numeric(Data$Reviews)
+Data$Installs <- as.numeric(Data$Installs)
+Data$Size <- as.numeric(Data$Size)
+
+Data$Installs <- gsub("\\+","", Data$Installs)
+Data$Installs <- gsub(",","", Data$Installs)
+Data$Size <- gsub("M","", Data$Size)
+Data$Current.Ver <- gsub("NaN","", Data$Current.Ver)
+Data$Current.Ver <- gsub("Varies with device","", Data$Current.Ver)
+Data2$Current.Ver <- gsub("\\.","", Data2$Current.Ver)
+Data2$Current.Ver <- format(x=Data2$Current.Ver,digits = 2,width = 2)
+                          
+#?POSIXct
+Data$TimeConversion <- as.POSIXct(Data$Last.Updated, format="%d-%b-%Y")
+
+
+summary(Data$Category)
+
+CategoryFilter <- Data$Category== "GAME" | Data$Category=="FAMILY" | Data$Category=="TOOLS" 
+Data2 <- Data[CategoryFilter&Data$Rating,]
+View(Data2)
+
+qplot(data=Data2,x=Reviews,y=Rating,size=I(1),color=Category)
+qplot(data=Data2,x=Category,y=Rating,geom="boxplot")
+
+d <- ggplot(data=Data2,aes(x=Category,y=Rating))
+d2<-d+geom_jitter(alpha=.8,aes(size=Installs ,color=Reviews))+geom_boxplot(outlier.colour = "NA")+xlab("Category")+ylab("Rating")+ggtitle("Ratings by Category")
+d2+ theme(
+  axis.title.x = element_text(color="Red",size=12),
+  axis.title.y = element_text(color="Red",size=12),
+  axis.text.x = element_text(size=8),
+  axis.text.y = element_text(size=8),
+  plot.title = element_text(size=12),
+  text = element_text(family="Comic Sans MS")
+  
+)
